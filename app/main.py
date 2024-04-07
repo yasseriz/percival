@@ -5,7 +5,7 @@ app = FastAPI()
 app.include_router(api_router)
 
 # Optional: Startup and Shutdown events
-@app.lifespan("startup")
+@app.on_event("startup")
 async def startup_event():
     # Initialize resources
     pass
