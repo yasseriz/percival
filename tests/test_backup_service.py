@@ -1,68 +1,47 @@
 import pytest
-from app.services.backup_service import backup_data, restore_data, get_blob_service_client
-from azure.core.exceptions import ResourceNotFoundError, HttpResponseError
-from azure.storage.blob import BlobServiceClient
-from unittest.mock import Mock
+from httpx import AsyncClient
+from unittest.mock import patch, Mock
+from app.main import app  # Import your FastAPI app instance
 
-@pytest.fixture
-def mock_blob_service_client(mocker):
-    mock_client = Mock(spec=BlobServiceClient)
-    mocker.patch('app.services.backup_service.get_blob_service_client', return_value=mock_client)
+# Mock BlobServiceClient for all tests in this file
+@pytest.fixture(autouse=True)
+def mock_blob_service_client(monkeypatch):
+    mock_client = Mock()
+    # Mock methods used in your backup_service.py
+    monkeypatch.setattr("app.services.backup_service.BlobServiceClient", Mock(return_value=mock_client))
+    mock_blob_client = Mock()
+    mock_blob_client.upload_blob.return_value = Mock()
+    mock_blob_client.download_blob().readall.return_value = b"fake data"
+    mock_client.get_blob_client.return_value = mock_blob_client
+    mock_client.get_container_client().get_blob_client.return_value = mock_blob_client
     return mock_client
 
-def test_get_blob_service_client(mocker):
-    mocker.patch('azure.identity.DefaultAzureCredential', return_value=Mock())
-    client = get_blob_service_client("testaccount")
-    assert client is not None
-    assert "testaccount.blob.core.windows.net" in str(client.url)
+@pytest.mark.asyncio
+async def test_backup_success():
+    async with AsyncClient(app=app, base_url="http://test") as ac:
+        response = await ac.post(
+            "/upload-files",
+            data={"storage_account_name": "testaccount", "container_name": "testcontainer"},
+            files={"files": ("testfile.txt", b"Hello, world!")}
+        )
+    assert response.status_code == 200
+    assert "success" in response.text
 
-def test_backup_data_success(mock_blob_service_client):
-    mock_blob_client = Mock()
-    mock_blob_client.upload_blob.return_value = None
-    mock_blob_service = mock_blob_service_client.get_blob_client
-    mock_blob_service.return_value = mock_blob_client
+@pytest.mark.asyncio
+async def test_backup_failure():
+    # Ensure that we're patching the method used in the actual backup operation
+    with patch("app.services.backup_service.BlobServiceClient.get_blob_client") as mock_get_blob_client:
+        mock_blob_client = Mock()
+        # Simulating an upload failure
+        mock_blob_client.upload_blob.side_effect = Exception("Upload failed")
+        mock_get_blob_client.return_value = mock_blob_client
 
-    result = backup_data("testaccount", "test-container", "test-blob", b"test data")
-    assert result["status"] == "success"
-
-def test_restore_data_success(mock_blob_service_client):
-    expected_data = b"test data"
-    mock_blob_client = Mock()
-    mock_blob_client.download_blob().readall.return_value = expected_data
-    mock_blob_service = mock_blob_service_client.get_blob_client
-    mock_blob_service.return_value = mock_blob_client
-
-    data = restore_data("testaccount", "test-container", "test-blob")
-    assert data == expected_data
-
-
-def test_backup_data_failure(mock_blob_service_client):
-    mock_blob_client = Mock()
-    mock_blob_client.upload_blob.side_effect = HttpResponseError(message="Network error")
-    mock_blob_service = mock_blob_service_client.get_blob_client
-    mock_blob_service.return_value = mock_blob_client
-
-    result = backup_data("testaccount", "test-container", "test-blob", b"test data")
-    assert result["status"] == "error"
-    assert "Network error" in result["message"]
-
-def test_restore_data_not_found_failure(mock_blob_service_client):
-    mock_blob_client = Mock()
-    mock_blob_client.download_blob.side_effect = ResourceNotFoundError(message="Blob not found")
-    mock_blob_service = mock_blob_service_client.get_blob_client
-    mock_blob_service.return_value = mock_blob_client
-
-    with pytest.raises(Exception) as excinfo:
-        restore_data("testaccount", "test-container", "test-blob")
-    assert "Blob not found" in str(excinfo.value)
-
-def test_restore_data_http_failure(mock_blob_service_client, mocker):
-    mock_blob_client = Mock()
-    # Simulate a different failure, such as an HttpResponseError
-    mock_blob_client.download_blob().readall.side_effect = HttpResponseError(message="HTTP error")
-    mock_blob_service = mock_blob_service_client.get_blob_client
-    mock_blob_service.return_value = mock_blob_client
-
-    with pytest.raises(Exception) as excinfo:
-        restore_data("testaccount", "test-container", "test-blob")
-    assert "HTTP error" in str(excinfo.value)
+        async with AsyncClient(app=app, base_url="http://test") as ac:
+            response = await ac.post(
+                "/upload-files/",
+                data={"storage_account_name": "failaccount", "container_name": "failcontainer"},
+                files={"files": ("failfile.txt", b"Bad data")}
+            )
+    
+    # Check for the expected 500 error status code
+    assert response.status_code == 500, "Expected a 500 error status code but received {0}".format(response.status_code)

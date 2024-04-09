@@ -1,4 +1,4 @@
-from azure.storage.blob import BlobServiceClient, BlobClient
+from azure.storage.blob import BlobServiceClient
 from azure.identity import DefaultAzureCredential
 
 def get_blob_service_client(storage_account_name: str) -> BlobServiceClient:
@@ -26,10 +26,9 @@ def backup_data(storage_account_name: str, container_name: str, blob_name: str, 
     blob_service_client = get_blob_service_client(storage_account_name)
     try:
         blob_client = blob_service_client.get_blob_client(container=container_name, blob=blob_name)
-        blob_client.upload_blob(data)
+        blob_client = blob_service_client.get_container_client(container_name).get_blob_client(blob_name)
+        blob_client.upload_blob(data, overwrite=True)
         return {"status": "success", "message": "Data backed up successfully."}
-    except Exception as e:
-        raise Exception("Error during backup process: " + str(e))
     except Exception as e:
         return {"status": "error", "message": "Failed to back up data.", "details": str(e)}
 

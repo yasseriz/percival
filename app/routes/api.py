@@ -1,7 +1,8 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, File, UploadFile, Form, HTTPException
 from app.services.deployment_service import trigger_pipeline_deployments
 from app.services.backup_service import backup_data, restore_data
-from app.schemas import Deployment, Backup, Restore
+from app.schemas import Deployment, Restore
+from typing import List
 
 router = APIRouter()
 
@@ -14,16 +15,30 @@ async def deploy(request: Deployment):
     """
     return trigger_pipeline_deployments(request.pipeline_id, request.branch)
 
-@router.post("/backup", tags=["backup"])
-async def backup(request: Backup):
+@router.post("/upload-files", tags=["backup"])
+async def backup(storage_account_name: str = Form(...), container_name: str = Form(...), files: List[UploadFile] = File(...)):
     """
     Triggers a backup of data to Azure Blob Storage
+
     :param storage_account_name: The name of the Azure Storage account
     :param container_name: The name of the Blob container
-    :param blob_name: The name of the blob (file) to create
-    :param data: The data to back up in bytes
+    :param files: List of files to be uploaded
+    :type files: List[UploadFile]
+    :return: List of upload results
+    :rtype: List[Dict[str, Any]]
+    :raises HTTPException: If there is an error during the backup process
     """
-    return backup_data(request.storage_account_name, request.container_name, request.blob_name, request.data)
+    upload_results = []
+    for file in files:
+        try:
+            file_content = await file.read()
+            result = backup_data(storage_account_name, container_name, file.filename, file_content)
+            upload_results.append(result)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
+        finally:
+            await file.close()
+    return upload_results
 
 @router.post("/restore", tags=["restore"])
 async def restore(request: Restore):
