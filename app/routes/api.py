@@ -1,6 +1,7 @@
 from fastapi import APIRouter, File, UploadFile, Form, HTTPException
 from app.services.deployment_service import trigger_pipeline_deployments
 from app.services.backup_service import backup_data, restore_data
+from app.services.insights_service import get_storage_account_utilization, get_storage_cost
 from app.schemas import Deployment, Restore
 from typing import List
 
@@ -49,3 +50,23 @@ async def restore(request: Restore):
     :param blob_name: The name of the blob (file) to retrieve
     """
     return restore_data(request.storage_account_name, request.container_name, request.blob_name)
+
+@router.get("/storage-metrics/{subscription_id}/{resource_group_name}/{storage_account_name}", tags=["insights"])
+async def storage_metrics(subscription_id: str, resource_group_name: str, storage_account_name: str):
+    """
+    Retrieves metrics for a storage account
+    :param subscription_id: The subscription ID
+    :param resource_group_name: The resource group name
+    :param storage_account_name: The storage account name
+    """
+    return get_storage_account_utilization(subscription_id, resource_group_name, storage_account_name)
+
+@router.get("/cost-management/{subscription_id}/{resource_group_name}/{storage_account_name}", tags=["insights"])
+async def storage_cost(subscription_id: str, resource_group_name: str, storage_account_name: str):
+    """
+    Retrieves cost management data for a storage account
+    :param subscription_id: The subscription ID
+    :param resource_group_name: The resource group name
+    :param storage_account_name: The storage account name
+    """
+    return get_storage_cost(subscription_id, resource_group_name, storage_account_name)
