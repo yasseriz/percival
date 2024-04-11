@@ -1,9 +1,11 @@
-from fastapi import APIRouter, File, UploadFile, Form, HTTPException
+from fastapi import APIRouter, File, UploadFile, Form, HTTPException, Query
 from app.services.deployment_service import trigger_pipeline_deployments
 from app.services.backup_service import backup_data, restore_data
-from app.services.insights_service import get_storage_account_utilization, get_storage_cost
+from app.services.insights_service import get_storage_account_utilization#, get_storage_cost
+from app.services.config_service import get_terraform_plan
 from app.schemas import Deployment, Restore
 from typing import List
+import subprocess
 
 router = APIRouter()
 
@@ -61,12 +63,45 @@ async def storage_metrics(subscription_id: str, resource_group_name: str, storag
     """
     return get_storage_account_utilization(subscription_id, resource_group_name, storage_account_name)
 
-@router.get("/cost-management/{subscription_id}/{resource_group_name}/{storage_account_name}", tags=["insights"])
-async def storage_cost(subscription_id: str, resource_group_name: str, storage_account_name: str):
+# @router.get("/cost-management/{subscription_id}/{resource_group_name}/{storage_account_name}", tags=["insights"])
+# async def storage_cost(subscription_id: str, resource_group_name: str, storage_account_name: str):
+#     """
+#     Retrieves cost management data for a storage account
+#     :param subscription_id: The subscription ID
+#     :param resource_group_name: The resource group name
+#     :param storage_account_name: The storage account name
+#     """
+#     return get_storage_cost(subscription_id, resource_group_name, storage_account_name)
+
+@router.post("/deploy-terraform", tags=["deployments"])
+async def deploy_terraform(file: UploadFile = File(...), environment: str = Query(..., regex="^(tst|stg|prod)$"), region: str = Query(..., regex="^(sea)$")):
     """
-    Retrieves cost management data for a storage account
-    :param subscription_id: The subscription ID
-    :param resource_group_name: The resource group name
-    :param storage_account_name: The storage account name
+    Triggers a deployment of Terraform files to Azure
+
+    :param file: List of Terraform files to deploy
+    :type file: List[UploadFile]
+    :param environment: The environment to deploy the files to (tst, stg, prod)
+    :type environment: str
+    :param region: The region to deploy the files to (sea)
+    :type region: str
+    :return: The result of the deployment
+    :rtype: Any
+    :raises HTTPException: If the file is not a zip file
     """
-    return get_storage_cost(subscription_id, resource_group_name, storage_account_name)
+    if not file.filename.endswith(".zip"):
+        raise HTTPException(status_code=400, detail="Only zip files are supported")
+    return await get_terraform_plan(file, environment, region)
+
+@router.post("/apply-terraform-plan", tags=["deployments"])
+async def apply_terraform_plan(provision_path: str):
+    """
+    Apply a Terraform plan to provision infrastructure.
+
+    Args:
+        provision_path (str): The path to the directory containing the Terraform files.
+
+    Returns:
+        dict: A dictionary with a success message indicating that the Terraform plan was applied successfully.
+    """
+    subprocess.run(["terraform", "apply", "plan.tfplan"], check=True, cwd=provision_path)
+    return {"message": "Terraform plan applied successfully"}

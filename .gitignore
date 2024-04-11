@@ -169,3 +169,7 @@ cython_debug/
 # Ignore CLI configuration files
 .terraformrc
 terraform.rc
+
+# Log files
+**/*.log
+operations/provision/.terraform.lock.hcl
