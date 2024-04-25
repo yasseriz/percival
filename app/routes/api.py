@@ -1,13 +1,16 @@
-from fastapi import APIRouter, File, UploadFile, Form, HTTPException, Query
+from fastapi import APIRouter, File, UploadFile, Form, HTTPException, Query, Body
 from app.services.deployment_service import trigger_pipeline_deployments
 from app.services.backup_service import backup_data, restore_data
 from app.services.insights_service import get_storage_account_utilization#, get_storage_cost
 from app.services.config_service import get_terraform_plan
-from app.schemas import Deployment, Restore
+from app.services.nlp_service import CommandInterpreter
+from app.utils.command_parser import parse_command
+from app.schemas import Deployment, Restore, UserInput
 from typing import List
 import subprocess
 
 router = APIRouter()
+# interpreter = CommandInterpreter('')
 
 @router.post("/deploy", tags=["deployments"])
 async def deploy(request: Deployment):
@@ -63,16 +66,6 @@ async def storage_metrics(subscription_id: str, resource_group_name: str, storag
     """
     return get_storage_account_utilization(subscription_id, resource_group_name, storage_account_name)
 
-# @router.get("/cost-management/{subscription_id}/{resource_group_name}/{storage_account_name}", tags=["insights"])
-# async def storage_cost(subscription_id: str, resource_group_name: str, storage_account_name: str):
-#     """
-#     Retrieves cost management data for a storage account
-#     :param subscription_id: The subscription ID
-#     :param resource_group_name: The resource group name
-#     :param storage_account_name: The storage account name
-#     """
-#     return get_storage_cost(subscription_id, resource_group_name, storage_account_name)
-
 @router.post("/deploy-terraform", tags=["deployments"])
 async def deploy_terraform(file: UploadFile = File(...), environment: str = Query(..., regex="^(tst|stg|prod)$"), region: str = Query(..., regex="^(sea)$")):
     """
@@ -105,3 +98,32 @@ async def apply_terraform_plan(provision_path: str):
     """
     subprocess.run(["terraform", "apply", "plan.tfplan"], check=True, cwd=provision_path)
     return {"message": "Terraform plan applied successfully"}
+
+@router.post("/execute-command", tags=["nlp"])
+async def execute_command(user_input: UserInput):
+    action = interpreter.interpret_command(user_input)
+    if action is None:
+        raise HTTPException(status_code=500, detail="Failed to interpret command or no output from interpreter")
+    try:
+        command_details = parse_command(action)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    
+    if command_details["type"] == "deploy":
+        return trigger_pipeline_deployments(command_details["pipeline_id"], command_details["branch"])
+
+    elif command_details["type"] == "backup":
+        # Instead of directly performing the backup, instruct the user to upload files
+        return {"message": "Please upload your files for backup using the /upload-files-for-backup endpoint.", 
+                "details": {"storage_account_name": command_details['storage_account_name'], 
+                            "container_name": command_details['container_name']}}
+    elif command_details["type"] == "restore":
+        return restore_data(command_details["storage_account_name"], command_details["container_name"], command_details["blob_name"])
+    elif command_details["type"] == "metrics":
+        return get_storage_account_utilization(command_details["subscription_id"], command_details["resource_group_name"], command_details["storage_account_name"])
+    elif command_details["type"] == "deploy-terraform":
+        return {"message": "Please upload your Terraform files for deployment using the /deploy-terraform endpoint.", "details": {"environment": command_details["environment"], "region": command_details["region"]}}
+    elif command_details["type"] == "apply-terraform-plan":
+        return apply_terraform_plan(command_details["provision_path"])
+    else:
+        raise HTTPException(status_code=404, detail="Action not found")

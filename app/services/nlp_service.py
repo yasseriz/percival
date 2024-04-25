@@ -1,15 +1,23 @@
-import openai
+from openai import OpenAI
+import os
+import logging
+client = OpenAI(
+    api_key= os.environ.get('OPEN_API_KEY')
+)
 
 class CommandInterpreter:
     def __init__(self, api_key) -> None:
         self.api_key = api_key
-        openai.api_key = self.api_key
+        client.api_key = self.api_key
 
     def interpret_command(self, input_text):
+        logging.info(f"Interpreting command: {input_text}")
         try:
-            response = openai.completions.create(
-                engine='gpt-4-turbo',
-                prompt=f"Translate the following prompt into an API action: '{input_text}'",
+            response = client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role":"system", "content":"You are an API developer. You have been given the following prompt to translate into an API action."},
+                    {"role":"user", "content":f"Translate the following prompt into an API action: '{input_text}'"}],
                 max_tokens=150,
                 n=1,
                 stop=None,

@@ -8,3 +8,6 @@ class Restore(BaseModel):
     storage_account_name: str
     container_name: str
     blob_name: str
+
+class UserInput(BaseModel):
+    user_input: str
