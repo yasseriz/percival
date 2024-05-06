@@ -2,6 +2,9 @@ from azure.identity import DefaultAzureCredential
 from azure.mgmt.costmanagement import CostManagementClient
 from azure.mgmt.monitor import MonitorManagementClient
 from datetime import datetime, timedelta
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def get_storage_account_utilization(subscription_id: str, resource_group_name: str, storage_account_name: str):
     monitor_client = MonitorManagementClient(

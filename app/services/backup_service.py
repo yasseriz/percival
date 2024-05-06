@@ -1,5 +1,8 @@
 from azure.storage.blob import BlobServiceClient
 from azure.identity import DefaultAzureCredential
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def get_blob_service_client(storage_account_name: str) -> BlobServiceClient:
     return BlobServiceClient(

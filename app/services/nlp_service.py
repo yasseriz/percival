@@ -1,8 +1,9 @@
 from openai import OpenAI
 import os
 import logging
+from app.utils.env_loader import get_config_value
 client = OpenAI(
-    api_key= os.environ.get('OPEN_API_KEY')
+    api_key= get_config_value('OPEN_API_KEY')
 )
 
 class CommandInterpreter:
