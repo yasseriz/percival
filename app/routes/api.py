@@ -1,16 +1,18 @@
-from fastapi import APIRouter, File, UploadFile, Form, HTTPException, Query, Body
+from fastapi import APIRouter, File, UploadFile, Form, HTTPException, Query, Response
 from app.services.deployment_service import trigger_pipeline_deployments
 from app.services.backup_service import backup_data, restore_data
-from app.services.insights_service import get_storage_account_utilization#, get_storage_cost
+from app.services.insights_service import get_storage_account_utilization
 from app.services.config_service import get_terraform_plan
 from app.services.nlp_service import CommandInterpreter
 from app.utils.command_parser import parse_command
 from app.schemas import Deployment, Restore, UserInput
 from typing import List
 import subprocess
+from app.utils.env_loader import get_config_value
+
 
 router = APIRouter()
-# interpreter = CommandInterpreter('')
+interpreter = CommandInterpreter(get_config_value('OPEN_API_KEY'))
 
 @router.post("/deploy", tags=["deployments"])
 async def deploy(request: Deployment):
@@ -54,8 +56,12 @@ async def restore(request: Restore):
     :param container_name: The name of the Blob container
     :param blob_name: The name of the blob (file) to retrieve
     """
-    return restore_data(request.storage_account_name, request.container_name, request.blob_name)
-
+    try:
+        file_bytes = restore_data(request.storage_account_name, request.container_name, request.blob_name)
+        return Response(content=file_bytes, media_type="application/octet-stream")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
 @router.get("/storage-metrics/{subscription_id}/{resource_group_name}/{storage_account_name}", tags=["insights"])
 async def storage_metrics(subscription_id: str, resource_group_name: str, storage_account_name: str):
     """

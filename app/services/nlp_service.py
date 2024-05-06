@@ -1,5 +1,4 @@
 from openai import OpenAI
-import os
 import logging
 from app.utils.env_loader import get_config_value
 client = OpenAI(
