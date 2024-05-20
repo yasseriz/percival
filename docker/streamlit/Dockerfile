@@ -18,4 +18,4 @@ COPY web_interface/ .
 EXPOSE 8501
 
 # Run the Streamlit app
-CMD ["streamlit", "run", "web_interface/streamlit_app.py", "--server.port=8501", "--server.headless=true"]
+CMD ["streamlit", "run", "streamlit_app.py", "--server.port=8501", "--server.headless=true"]
