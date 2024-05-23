@@ -3,8 +3,10 @@ import os
 import base64
 import logging
 from app.utils.env_loader import get_config_value
+logger = logging.getLogger(__name__)
 
 pat = get_config_value("PAT")
+logger.info(f"Retrieved PAT")
 encoded_pat = base64.b64encode(f":{pat}".encode("ascii")).decode("ascii")
 
 def trigger_pipeline_deployments(pipeline_id: str, branch: str = "main"):
@@ -28,8 +30,9 @@ def trigger_pipeline_deployments(pipeline_id: str, branch: str = "main"):
             }
         }
     }
+    logger.info(f"Triggering deployment for pipeline: {pipeline_id}")
     response = httpx.post(pipeline_url, json=pipeline_body, headers=headers, follow_redirects=False)
-    logging.info(f"Interpreting command: {response.status_code}")
+    logger.info(f"Interpreting command: {response.status_code}")
     if response.status_code == 200 or response.status_code == 201:
         return {"status": "success", "message": "Deployment triggered successfully"}
     elif response.status_code == 404:

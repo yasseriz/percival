@@ -4,6 +4,7 @@ from app.utils.env_loader import get_config_value
 client = OpenAI(
     api_key= get_config_value('OPEN_API_KEY')
 )
+logger = logging.getLogger(__name__)
 
 class CommandInterpreter:
     def __init__(self, api_key) -> None:
@@ -11,7 +12,7 @@ class CommandInterpreter:
         client.api_key = self.api_key
 
     def interpret_command(self, input_text):
-        logging.info(f"Interpreting command: {input_text}")
+        logger.info(f"Interpreting command: {input_text}")
         try:
             response = client.chat.completions.create(
                 model="gpt-3.5-turbo",

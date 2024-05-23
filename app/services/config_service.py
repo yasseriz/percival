@@ -4,6 +4,7 @@ import subprocess
 from fastapi import UploadFile, HTTPException
 from tempfile import NamedTemporaryFile, TemporaryDirectory
 import logging, zipfile
+logger = logging.getLogger(__name__)
 
 async def get_terraform_plan(file: UploadFile, environment: str, region: str):
     """
@@ -40,14 +41,14 @@ async def get_terraform_plan(file: UploadFile, environment: str, region: str):
                 with zipfile.ZipFile(zip_path, 'r') as zip_ref:
                     zip_ref.extractall(temp_dir)
             except zipfile.BadZipFile:
-                logging.error("Uploaded file is not a zip archive or is corrupted.")
+                logger.error("Uploaded file is not a zip archive or is corrupted.")
                 raise HTTPException(status_code=400, detail="Invalid zip file.")
             finally:
                 os.remove(zip_path)  # Clean up the zip file
 
             provision_path = os.path.join(temp_dir, "provision")
             if not os.path.exists(provision_path):
-                logging.error("No 'provision' directory found in the zip file.")
+                logger.error("No 'provision' directory found in the zip file.")
                 raise FileNotFoundError("No 'provision' directory found in the zip file.")
             
             # Construct file names based on environment and region
@@ -60,7 +61,7 @@ async def get_terraform_plan(file: UploadFile, environment: str, region: str):
 
             # Ensure both the backend and variables files exist
             if not os.path.exists(backend_file_path) or not os.path.exists(variables_file_path):
-                logging.error("Both the backend and variables files must exist.")
+                logger.error("Both the backend and variables files must exist.")
                 raise FileNotFoundError("Both the backend and variables files must exist.")
             
             # Initialize Terraform with backend configuration
@@ -72,5 +73,5 @@ async def get_terraform_plan(file: UploadFile, environment: str, region: str):
 
             return {"plan": plan_details}
     except Exception as e:
-        logging.error(f"An error occurred during Terraform deployment: {e}")
+        logger.error(f"An error occurred during Terraform deployment: {e}")
         raise HTTPException(status_code=500, detail="An error occurred during Terraform deployment.")
