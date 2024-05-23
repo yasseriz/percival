@@ -11,7 +11,11 @@ def get_config_value(name):
     if os.getenv("ENV") == "local":
         # Load variables from .env file
         load_dotenv()
+        print("Retrive from .env file")
         return os.getenv(name)
     else:
         # Get from Azure Key Vault
-        return get_secret(name)
+        print("Retrive from Azure Key Vault")
+        secret_value = get_secret(name)
+        print("Retrived from key vault successfully")
+        return secret_value

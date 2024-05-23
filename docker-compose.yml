@@ -16,6 +16,7 @@ services:
       - AZURE_CLIENT_SECRET=${AZURE_CLIENT_SECRET}
       - AZURE_CLIENT_ID=${AZURE_CLIENT_ID}
       - OPEN_API_KEY=${OPEN_API_KEY}
+      - LOG_LEVEL=info
 
   streamlit:
     build:

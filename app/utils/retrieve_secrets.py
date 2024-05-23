@@ -1,22 +1,53 @@
-from azure.identity import DefaultAzureCredential
+from azure.identity import ManagedIdentityCredential
 from azure.keyvault.secrets import SecretClient
+import logging
 import os
+logger = logging.getLogger(__name__)
+
+def to_keyvault_name(env_var_name):
+    """
+    Convert an environment variable name to a Key Vault secret name.
+    Example: 'AZURE_CLIENT_ID' -> 'azureClientId'
+    """
+    logger.info(f"Converting {env_var_name} to Key Vault name")
+    print(f"Converting {env_var_name} to Key Vault name")
+    parts = env_var_name.lower().split('_')
+    return ''.join(parts[0] + part.capitalize() for part in parts[1:])
+
+def from_keyvault_name(kv_name):
+    """
+    Convert a Key Vault secret name back to an environment variable name.
+    Example: 'azureClientId' -> 'AZURE_CLIENT_ID'
+    """
+    return ''.join('_' + c if c.isupper() else c for c in kv_name).upper()
+
 
 def get_secret(secret_name: str):
     """
-    Retrieves the value of a secret from Azure Key Vault.
+    Retrieves the value of a secret from Azure Key Vault, expecting and returning the local naming convention for the secret name.
 
     Args:
-        secret_name (str): The name of the secret to retrieve.
+        secret_name (str): The name of the secret to retrieve, in local .env format.
 
     Returns:
-        str: The value of the secret.
+        dict: A dictionary with the original environment variable name as the key and the secret's value.
 
     Raises:
         AzureError: If there is an error retrieving the secret.
     """
-    keyvault_url = os.getenv("KEYVAULT_URL")
-    credential = DefaultAzureCredential()
+    # Convert to Key Vault compatible name
+    kv_secret_name = to_keyvault_name(secret_name)
+    keyvault_url = "https://pptst01atmkvtsea01.vault.azure.net/"
+    credential = ManagedIdentityCredential()
     client = SecretClient(vault_url=keyvault_url, credential=credential)
-    secret = client.get_secret(secret_name)
-    return secret.value
+    
+    try:
+        secret = client.get_secret(kv_secret_name).value
+        logger.info(f"Retrieved secret {secret_name} from Azure Key Vault")
+        print(f"Retrieved secret {secret_name} from Azure Key Vault")
+        # Set the secret as an environment variable in the required format
+        print(f"secret value: {secret.value}")
+        os.environ[secret_name] = secret.value
+        return secret.value
+    except Exception as e:
+        raise Exception(f"Failed to retrieve secret {secret_name} from Azure Key Vault: {str(e)}")
