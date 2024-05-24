@@ -39,3 +39,12 @@ module "key_vault" {
   managed_app_name    = var.managed_app_name
 
 }
+
+module "container_registry" {
+  source                      = "./modules/container_registry"
+  depends_on                  = [module.resource_group]
+  resource_group_name         = var.resource_group_name
+  container_registry_name     = var.container_registry_name
+  container_registry_location = var.container_registry_location
+  managed_app_name            = var.managed_app_name
+}

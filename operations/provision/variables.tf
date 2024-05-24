@@ -38,3 +38,13 @@ variable "managed_app_name" {
   type        = string
 
 }
+variable "container_registry_name" {
+  description = "The name of the container registry"
+  type        = string
+
+}
+variable "container_registry_location" {
+  description = "The location of the container registry"
+  type        = string
+
+}
