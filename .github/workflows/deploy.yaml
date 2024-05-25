@@ -6,6 +6,12 @@ on:
       ARTIFACT-NAME:
         required: true
         type: string
+      ENVIRONMENT-CODE:
+        required: true
+        type: string
+      REGION-CODE:
+        required: true
+        type: string
 jobs:
   deploy:
     env:
