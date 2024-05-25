@@ -1,4 +1,5 @@
-name: "Template - Infrastructure"
+name: Deploy Template
+
 on:
   workflow_call:
     inputs:
@@ -52,7 +53,7 @@ jobs:
         run: terraform apply -input-false -no-color tfplan-percival
         continue-on-error: true
         working-directory: "${{ env.TF_PATH}}"
-      
+
       # - name: Deploy FastAPI Container app
       #   uses: azure/container-apps-deploy-action@v1
       #   with:
@@ -61,7 +62,7 @@ jobs:
       #     containerAppName: ${{ inputs.CONTAINER-APP-NAME }}
       #     resourceGroup: ${{ inputs.RESOURCE-GROUP }}
       #     containerAppEnvironment: ${{ inputs.ENVIRONMENT-CODE }}
-      
+
       # - name: Deploy Streamlit Container app
       #   uses: azure/container-apps-deploy-action@v1
       #   with:
@@ -70,5 +71,3 @@ jobs:
       #     containerAppName: ${{ inputs.CONTAINER-APP-NAME }}
       #     resourceGroup: ${{ inputs.RESOURCE-GROUP }}
       #     containerAppEnvironment: ${{ inputs.ENVIRONMENT-CODE }}
-      
-

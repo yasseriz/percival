@@ -1,5 +1,5 @@
 # Build pipeline for the project
-name: Build
+name: Build Template
 on:
   workflow_call:
     inputs:
@@ -10,6 +10,8 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
+    env: 
+      DOCKER_BUILDKIT: 1
     strategy:
       matrix:
         service: [fastapi, streamlit]

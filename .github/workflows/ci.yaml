@@ -3,22 +3,20 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:
+jobs:
+  build:
+    name: Build
+    uses: ./github/workflows/build.yaml
+    secrets: inherit
+    with:
+      ARTIFACT-NAME: pervical-artifact
 
-  jobs:
-    build:
-      name: Build
-      uses: ./github/workflows/build.yaml
-      secrets: inherit
-      with:
-        ARTIFACT-NAME: pervical-artifact
-    
-    deploy:
-      name: Deploy
-      uses: ./github/workflows/deploy.yaml
-      needs: build
-      secrets: inherit
-      with:
-        ENVIRONMENT-CODE: tst01
-        REGION-CODE: sea
-        ARTIFACT-NAME: pervical-artifact
+  deploy:
+    name: Deploy
+    uses: ./github/workflows/deploy.yaml
+    needs: build
+    secrets: inherit
+    with:
+      ENVIRONMENT-CODE: tst01
+      REGION-CODE: sea
+      ARTIFACT-NAME: pervical-artifact
