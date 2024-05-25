@@ -46,6 +46,7 @@ jobs:
 
       - name: Terraform init
         run: terraform init -input=false -backend-config="${{ env.BACKEND_CONFIG_PATH }}/backend.${{ inputs.ENVIRONMENT-CODE }}.${{ inputs.REGION-CODE }}.conf"
+        working-directory: "${{ env.TF_PATH}}"
 
       - name: Terraform validate
         if: ${{ github.ref_name != 'refs/heads/main' }}
@@ -54,7 +55,8 @@ jobs:
 
       - name: Terraform plan
         run: terraform plan -out="tfplan-percival" -input=false -no-color -var-file="${{ env.VARIABLE_FILE_PATH }}/variables.${{ inputs.ENVIRONMENT-CODE }}.${{ inputs.REGION-CODE }}.tfvars"
-
+        working-directory: "${{ env.TF_PATH}}"
+      
       - name: Terraform apply
         run: terraform apply -input=false -no-color tfplan-percival
         continue-on-error: true
