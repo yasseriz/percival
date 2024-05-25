@@ -19,9 +19,9 @@ jobs:
       ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
       ARM_SUBSCRIPTION_ID: ${{ vars.ARM_SUBSCRIPTION_ID }}
       ARM_TENANT_ID: ${{ vars.ARM_TENANT_ID }}
-      BACKEND_CONFIG_PATH: "${{ github.workspace }}/operations/config/${{ inputs.CONFIG-PATH }}"
-      VARIABLE_FILE_PATH: "${{ github.workspace }}/operations/variables/${{ inputs.CONFIG-PATH }}"
-      TF_PATH: "${{ github.workspace }}/operations/provision/${{ inputs.TF-DIR }}"
+      BACKEND_CONFIG_PATH: "${{ github.workspace }}/operations/config"
+      VARIABLE_FILE_PATH: "${{ github.workspace }}/operations/variables"
+      TF_PATH: "${{ github.workspace }}/operations/provision"
     runs-on: ubuntu-latest
     steps:
       - name: Download artifact
