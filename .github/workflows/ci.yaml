@@ -6,14 +6,14 @@ on:
 jobs:
   build:
     name: Build
-    uses: ./github/workflows/build.yaml
+    uses: ./github/workflows/build.yaml@main
     secrets: inherit
     with:
       ARTIFACT-NAME: pervical-artifact
 
   deploy:
     name: Deploy
-    uses: ./github/workflows/deploy.yaml
+    uses: ./github/workflows/deploy.yaml@main
     needs: build
     secrets: inherit
     with:
