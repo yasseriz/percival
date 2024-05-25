@@ -1,0 +1,74 @@
+name: "Template - Infrastructure"
+on:
+  workflow_call:
+    inputs:
+      ARTIFACT-NAME:
+        required: true
+        type: string
+jobs:
+  deploy:
+    env:
+      ARM_CLIENT_ID: ${{ vars.ARM_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+      ARM_SUBSCRIPTION_ID: ${{ vars.ARM_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ vars.ARM_TENANT_ID }}
+      BACKEND_CONFIG_PATH: "{{ github.workspace }}/operations/config/${{ inputs.CONFIG-PATH }}"
+      VARIABLE_FILE_PATH: "{{ github.workspace }}/operations/variables/${{ inputs.CONFIG-PATH }}"
+      TF_PATH: "{{ github.workspace }}/operations/provision/${{ inputs.TF-DIR }}"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ inputs.ARTIFACT-NAME }}
+          path: operations/
+
+      - name: Azure login
+        uses: azure/login@v1
+        with:
+          creds: '{"clientId": "${{ vars.AZURE-CLIENT-ID }}", "clientSecret": "${{ secrets.AZURE-CLIENT-SECRET }}", "subscriptionId": "${{ vars.AZURE-SUBSCRIPTION-ID }}" ,"tenantId": "${{ vars.AZURE-TENANT-ID }}"}'
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.5.7
+
+      - name: Terraform format
+        run: terraform fmt
+        continue-on-error: true
+
+      - name: Terraform init
+        run: terraform init -input-false -backend-config="${{ env.BACKEND_CONFIG_PATH }}/backend.${{ inputs.ENVIRONMENT-CODE }}.${{ inputs.REGION-CODE }}.conf
+
+      - name: Terraform validate
+        if: ${{ github.ref_name != 'refs/heads/main' }}
+        run: terraform validate
+        working-directory: "${{ env.TF_PATH}}"
+
+      - name: Terraform plan
+        run: terraform plan -out="tfplan-percival" -input-false -no-color -var-file="${{ env.VARIABLE_FILE_PATH }}/variables.${{ inputs.ENVIRONMENT-CODE }}.${{ inputs.REGION-CODE }}.tfvars"
+
+      - name: Terraform apply
+        run: terraform apply -input-false -no-color tfplan-percival
+        continue-on-error: true
+        working-directory: "${{ env.TF_PATH}}"
+      
+      # - name: Deploy FastAPI Container app
+      #   uses: azure/container-apps-deploy-action@v1
+      #   with:
+      #     acrName: ${{ inputs.ACR-NAME}}
+      #     imageToDeploy: ${{ vars.DOCKER-REGISTRY-URL }}/${{ github.event.repository.name }}/fastapi:${{ env.VERSION_TAG }}
+      #     containerAppName: ${{ inputs.CONTAINER-APP-NAME }}
+      #     resourceGroup: ${{ inputs.RESOURCE-GROUP }}
+      #     containerAppEnvironment: ${{ inputs.ENVIRONMENT-CODE }}
+      
+      # - name: Deploy Streamlit Container app
+      #   uses: azure/container-apps-deploy-action@v1
+      #   with:
+      #     acrName: ${{ inputs.ACR-NAME}}
+      #     imageToDeploy: ${{ vars.DOCKER-REGISTRY-URL }}/${{ github.event.repository.name }}/streamlit:${{ env.VERSION_TAG }}
+      #     containerAppName: ${{ inputs.CONTAINER-APP-NAME }}
+      #     resourceGroup: ${{ inputs.RESOURCE-GROUP }}
+      #     containerAppEnvironment: ${{ inputs.ENVIRONMENT-CODE }}
+      
+
