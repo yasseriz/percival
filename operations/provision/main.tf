@@ -36,8 +36,6 @@ module "key_vault" {
   resource_group_name = var.resource_group_name
   key_vault_name      = var.key_vault_name
   key_vault_location  = var.key_vault_location
-  managed_app_name    = var.managed_app_name
-
 }
 
 module "container_registry" {

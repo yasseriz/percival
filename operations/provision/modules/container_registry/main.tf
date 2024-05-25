@@ -20,6 +20,6 @@ resource "azurerm_container_registry" "acr" {
   admin_enabled       = false
   identity {
     type         = "UserAssigned"
-    identity_ids = ["${data.azurerm_managed_application_definition.percival.object_id}"]
+    identity_ids = [data.azurerm_managed_application_definition.percival.id]
   }
 }
