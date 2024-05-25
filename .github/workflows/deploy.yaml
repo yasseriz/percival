@@ -45,7 +45,7 @@ jobs:
         continue-on-error: true
 
       - name: Terraform init
-        run: terraform init -input-false -backend-config="${{ env.BACKEND_CONFIG_PATH }}/backend.${{ inputs.ENVIRONMENT-CODE }}.${{ inputs.REGION-CODE }}.conf
+        run: terraform init -input-false -backend-config="${{ env.BACKEND_CONFIG_PATH }}/backend.${{ inputs.ENVIRONMENT-CODE }}.${{ inputs.REGION-CODE }}.conf"
 
       - name: Terraform validate
         if: ${{ github.ref_name != 'refs/heads/main' }}
