@@ -33,11 +33,6 @@ variable "key_vault_location" {
   type        = string
 
 }
-variable "managed_app_name" {
-  description = "The name of the managed application"
-  type        = string
-
-}
 variable "container_registry_name" {
   description = "The name of the container registry"
   type        = string

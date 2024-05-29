@@ -13,8 +13,3 @@ variable "container_registry_location" {
   type        = string
 
 }
-variable "managed_app_name" {
-  description = "The name of the managed application"
-  type        = string
-
-}

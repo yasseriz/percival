@@ -8,7 +8,5 @@ storage_account_type = "LRS"
 key_vault_name = "pptst01atmkvtsea01"
 key_vault_location = "Southeast Asia"
 
-managed_app_name = "pp-authentication"
-
 container_registry_name = "pptst01atmacrsea01"
 container_registry_location = "Southeast Asia"
