@@ -24,6 +24,12 @@ jobs:
       TF_PATH: "${{ github.workspace }}/operations/provision"
     runs-on: ubuntu-latest
     steps:
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ inputs.ARTIFACT-NAME }}
+          path: operations/
+          
       - name: Download artifact
         uses: actions/download-artifact@v2
         with:
