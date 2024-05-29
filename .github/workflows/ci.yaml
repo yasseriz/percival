@@ -7,12 +7,12 @@ on:
   workflow_dispatch:
 
 jobs:
-  # build:
-  #   name: Build
-  #   uses: ./.github/workflows/build.yaml
-  #   secrets: inherit
-  #   with:
-  #     ARTIFACT-NAME: pervical-artifact
+  build:
+    name: Build
+    uses: ./.github/workflows/build.yaml
+    secrets: inherit
+    with:
+      ARTIFACT-NAME: pervical-artifact
 
   deploy:
     name: Deploy
