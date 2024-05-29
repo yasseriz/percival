@@ -24,7 +24,7 @@ resource "azurerm_container_app" "fastapi" {
   revision_mode                = "Single"
   identity {
     type         = "UserAssigned"
-    identity_ids = [azurerm_user_assigned_identity.mi.id]
+    identity_ids = [data.azurerm_user_assigned_identity.mi.id]
   }
   template {
     container {
@@ -43,7 +43,7 @@ resource "azurerm_container_app" "streamlit" {
   revision_mode                = "Single"
   identity {
     type         = "UserAssigned"
-    identity_ids = [azurerm_user_assigned_identity.mi.id]
+    identity_ids = [data.azurerm_user_assigned_identity.mi.id]
   }
   template {
     container {
