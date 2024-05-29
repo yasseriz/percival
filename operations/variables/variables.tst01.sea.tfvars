@@ -10,3 +10,8 @@ key_vault_location = "Southeast Asia"
 
 container_registry_name = "pptst01atmacrsea01"
 container_registry_location = "Southeast Asia"
+
+container_app_environment_name = "pptst01atmcaesea01"
+container_app_location = "Southeast Asia"
+fastapi_container_app_name = "pptst01atmcoasea01"
+streamlit_container_app_name = "pptst01atmcoasea02"
