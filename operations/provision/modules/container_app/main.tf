@@ -29,7 +29,7 @@ resource "azurerm_container_app" "fastapi" {
   template {
     container {
       name   = "fastapi-app"
-      image  = "pptst01atmacrsea01.azurecr.io/percival/fastapi:latest"
+      image  = "pptst01atmacrsea01.azurecr.io/percival/fastapi:${var.version_tag}"
       cpu    = 0.25
       memory = "0.5Gi"
     }
@@ -48,7 +48,7 @@ resource "azurerm_container_app" "streamlit" {
   template {
     container {
       name   = "fastapi-app"
-      image  = "pptst01atmacrsea01.azurecr.io/percival/streamlit:latest"
+      image  = "pptst01atmacrsea01.azurecr.io/percival/streamlit:${var.version_tag}"
       cpu    = 0.25
       memory = "0.5Gi"
     }

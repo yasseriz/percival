@@ -35,6 +35,13 @@ jobs:
         with:
           creds: '{"clientId": "${{ vars.ARM_CLIENT_ID }}", "clientSecret": "${{ secrets.ARM_CLIENT_SECRET }}", "subscriptionId": "${{ vars.ARM_SUBSCRIPTION_ID }}" ,"tenantId": "${{ vars.ARM_TENANT_ID }}"}'
 
+      - name: Login to ACR
+        uses: azure/docker-login@v2
+        with:
+          login-server: ${{ vars.DOCKER_REGISTRY_URL}}
+          username: ${{ vars.DOCKER_REGISTRY_USERNAME}}
+          password: ${{ secrets.DOCKER_REGISTRY_PASSWORD}}
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
@@ -54,7 +61,7 @@ jobs:
         working-directory: "${{ env.TF_PATH}}"
 
       - name: Terraform plan
-        run: terraform plan -out="tfplan-percival" -input=false -no-color -var-file="${{ env.VARIABLE_FILE_PATH }}/variables.${{ inputs.ENVIRONMENT-CODE }}.${{ inputs.REGION-CODE }}.tfvars"
+        run: terraform plan -out="tfplan-percival" -input=false -no-color -var "version_tag=${{ env.VERSION_TAG }}" -var-file="${{ env.VARIABLE_FILE_PATH }}/variables.${{ inputs.ENVIRONMENT-CODE }}.${{ inputs.REGION-CODE }}.tfvars"
         working-directory: "${{ env.TF_PATH}}"
       
       - name: Terraform apply

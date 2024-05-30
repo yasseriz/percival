@@ -63,3 +63,8 @@ variable "streamlit_container_app_name" {
   type        = string
   
 }
+variable "version_tag" {
+  description = "The version tag of the container image"
+  type        = string
+  
+}
