@@ -22,6 +22,7 @@ jobs:
       BACKEND_CONFIG_PATH: "${{ github.workspace }}/operations/config"
       VARIABLE_FILE_PATH: "${{ github.workspace }}/operations/variables"
       TF_PATH: "${{ github.workspace }}/operations/provision"
+
     runs-on: ubuntu-latest
     steps:
       - name: Download artifact
@@ -29,6 +30,11 @@ jobs:
         with:
           name: ${{ inputs.ARTIFACT-NAME }}
           path: operations/
+      
+      - name: Create tag from commit SHA
+        run: |
+          export VERSION=$(git rev-parse --short HEAD | cut -c1-7)
+          echo "VERSION_TAG=${VERSION}" >> $GITHUB_ENV
 
       - name: Azure login
         uses: azure/login@v1
