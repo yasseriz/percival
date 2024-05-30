@@ -46,8 +46,7 @@ def get_secret(secret_name: str):
         logger.info(f"Retrieved secret {secret_name} from Azure Key Vault")
         print(f"Retrieved secret {secret_name} from Azure Key Vault")
         # Set the secret as an environment variable in the required format
-        print(f"secret value: {secret.value}")
-        os.environ[secret_name] = secret.value
-        return secret.value
+        os.environ[secret_name] = secret
+        return secret
     except Exception as e:
         raise Exception(f"Failed to retrieve secret {secret_name} from Azure Key Vault: {str(e)}")
