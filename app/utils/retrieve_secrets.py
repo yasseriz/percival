@@ -12,7 +12,7 @@ def to_keyvault_name(env_var_name):
     logger.info(f"Converting {env_var_name} to Key Vault name")
     print(f"Converting {env_var_name} to Key Vault name")
     parts = env_var_name.lower().split('_')
-    return ''.join(parts[0] + part.capitalize() for part in parts[1:])
+    return parts[0] + ''.join(part.capitalize() for part in parts[1:])
 
 def from_keyvault_name(kv_name):
     """
@@ -37,6 +37,7 @@ def get_secret(secret_name: str):
     """
     # Convert to Key Vault compatible name
     kv_secret_name = to_keyvault_name(secret_name)
+    print(f"Retrieving secret {kv_secret_name} from Azure Key Vault")
     keyvault_url = "https://pptst01atmkvtsea01.vault.azure.net/"
     credential = ManagedIdentityCredential(client_id="58246e13-0a2d-4d1a-89f0-19d9c18ca469")
     client = SecretClient(vault_url=keyvault_url, credential=credential)
