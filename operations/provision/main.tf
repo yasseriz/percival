@@ -52,7 +52,4 @@ module "container_app" {
   resource_group_name            = var.resource_group_name
   container_app_environment_name = var.container_app_environment_name
   container_app_location         = var.container_app_location
-  fastapi_container_app_name     = var.fastapi_container_app_name
-  streamlit_container_app_name   = var.streamlit_container_app_name
-  version_tag                    = var.version_tag
 }
