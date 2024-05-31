@@ -3,6 +3,8 @@ import requests
 import base64
 
 st.title('Welcome to the Web Interface')
+# base_url = 'http://fastapi:8000'
+base_url = 'https://pptst01atmcoasea01--rpgknhz.whitecliff-6089bcdd.southeastasia.azurecontainerapps.io/'
 
 # User input for pipeline id and branch name
 pipeline_id = st.text_input("Enter the pipeline ID")
@@ -14,7 +16,7 @@ if st.button('Trigger Deployment'):
         'pipeline_id': pipeline_id,
         'branch': branch
     }
-    response = requests.post('http://fastapi:8000/deploy', json=payload)
+    response = requests.post(f'{base_url}/deploy', json=payload)
     # Post the request to the FASTAPI endpoint
     if response.status_code == 200:
         st.success('Deployment triggered successfully')
@@ -29,7 +31,7 @@ storage_account_name = st.text_input("Enter the storage account name")
 
 if st.button('Fetch Metrics'):
     # Construct the URL
-    url = f"http://fastapi:8000/storage-metrics/{subscription_id}/{resource_group_name}/{storage_account_name}"
+    url = f"{base_url}/storage-metrics/{subscription_id}/{resource_group_name}/{storage_account_name}"
     response = requests.get(url)
     if response.status_code == 200:
         metrics = response.json()
@@ -54,7 +56,7 @@ if st.button('Backup files'):
                 'container_name': (None, container_name_backup)
             }
             response = requests.post(
-                f'http://fastapi:8000/upload-files',
+                f'{base_url}/upload-files',
                 files=files
             )
             if response.status_code == 200:
@@ -78,7 +80,7 @@ if st.button('Restore File'):
             "container_name": container_name_restore.strip(),
             "blob_name": blob_name_restore.strip()
         }
-        restore_url = 'http://fastapi:8000/restore'
+        restore_url = f'{base_url}/restore'
         response = requests.post(restore_url, json=restore_payload)
         if response.status_code == 200:
             blob_data = response.content
@@ -102,7 +104,7 @@ if st.button("Generate Terraform Plan"):
     if uploaded_zip and environment and region:
         files = {'file': (uploaded_zip.name, uploaded_zip, 'application/zip')}
         response = requests.post(
-            f'http://fastapi:8000/deploy-terraform?environment={environment}&region={region}',
+            f'{base_url}/deploy-terraform?environment={environment}&region={region}',
             files=files
         )
         if response.status_code == 200:
@@ -119,7 +121,7 @@ provision_path = st.text_input("Enter the provision path")
 if st.button("Apply Terraform Plan"):
     if provision_path:
         response = requests.post(
-            f'http://fastapi:8000/apply-terraform-plan',
+            f'{base_url}/apply-terraform-plan',
             json={"provision_path": provision_path}
         )
         if response.status_code == 200:
