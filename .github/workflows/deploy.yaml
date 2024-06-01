@@ -84,7 +84,7 @@ jobs:
           azcliversion: latest
           inlineScript: |
             az containerapp create --resource-group pptst01sea-atm --name pptst01atmcoasea01 --image "${{ vars.DOCKER_REGISTRY_URL }}/${{ github.event.repository.name }}/fastapi:${{ env.VERSION_TAG }}" --registry-server ${{ vars.DOCKER_REGISTRY_URL }} --target-port 8000 --ingress external --environment pptst01atmcaesea01 --registry-identity ${{ vars.MI_RESOURCE_ID}}
-            api_base_url = $(az containerapp show --name pptst01atmcoasea01 --resource-group pptst01sea-atm --query 'properties.configuration.ingress.fqdn' -o tsv)
+            api_base_url=$(az containerapp show --name pptst01atmcoasea01 --resource-group pptst01sea-atm --query 'properties.configuration.ingress.fqdn' -o tsv)
             az containerapp creaste --resource-group pptst01sea-atm --name pptst01atmcoasea02 --environment pptst01atmcaesea01 --env-vars API_BASE_URL=$api_base_url --image "${{ vars.DOCKER_REGISTRY_URL }}/${{ github.event.repository.name }}/streamlit:${{ env.VERSION_TAG }}" --registry-server ${{ vars.DOCKER_REGISTRY_URL }} --target-port 8501 --ingress external --registry-identity ${{ vars.MI_RESOURCE_ID}}
 
       # - name: Deploy FastAPI Container app
