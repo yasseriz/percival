@@ -4,7 +4,7 @@ import base64
 
 st.title('Welcome to the Web Interface')
 # base_url = 'http://fastapi:8000'
-base_url = 'https://pptst01atmcoasea01--psv7pux.whitecliff-6089bcdd.southeastasia.azurecontainerapps.io/'
+base_url = 'https://pptst01atmcoasea01--qd9ou8q.whitecliff-6089bcdd.southeastasia.azurecontainerapps.io/'
 
 # User input for pipeline id and branch name
 pipeline_id = st.text_input("Enter the pipeline ID")
