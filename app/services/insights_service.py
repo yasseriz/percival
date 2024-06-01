@@ -8,7 +8,7 @@ from app.utils.env_loader import get_config_value
 load_dotenv()
 
 def get_storage_account_utilization(subscription_id: str, resource_group_name: str, storage_account_name: str):
-    client_id_secret = get_config_value("AZURE_CLIENT_ID")
+    client_id_secret = get_config_value("MI_CLIENT_ID")
     monitor_client = MonitorManagementClient(
         ManagedIdentityCredential(client_id=client_id_secret),
         subscription_id

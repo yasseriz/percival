@@ -6,7 +6,7 @@ from app.utils.env_loader import get_config_value
 load_dotenv()
 
 def get_blob_service_client(storage_account_name: str) -> BlobServiceClient:
-    client_id_secret = get_config_value("AZURE_CLIENT_ID")
+    client_id_secret = get_config_value("MI_CLIENT_ID")
     return BlobServiceClient(
         account_url=f"https://{storage_account_name}.blob.core.windows.net/",
         credential=ManagedIdentityCredential(client_id=client_id_secret)
