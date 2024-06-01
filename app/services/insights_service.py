@@ -1,14 +1,16 @@
-from azure.identity import DefaultAzureCredential
+from azure.identity import ManagedIdentityCredential
 from azure.mgmt.costmanagement import CostManagementClient
 from azure.mgmt.monitor import MonitorManagementClient
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
+from app.utils.env_loader import get_config_value
 
 load_dotenv()
 
 def get_storage_account_utilization(subscription_id: str, resource_group_name: str, storage_account_name: str):
+    client_id_secret = get_config_value("AZURE_CLIENT_ID")
     monitor_client = MonitorManagementClient(
-        DefaultAzureCredential(),
+        ManagedIdentityCredential(client_id=client_id_secret),
         subscription_id
     )
     resource_uri = f"/subscriptions/{subscription_id}/resourceGroups/{resource_group_name}/providers/Microsoft.Storage/storageAccounts/{storage_account_name}"
