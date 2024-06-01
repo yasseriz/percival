@@ -1,10 +1,12 @@
 import streamlit as st
 import requests
 import base64
+import os
 
 st.title('Welcome to the Web Interface')
 # base_url = 'http://fastapi:8000'
-base_url = 'https://pptst01atmcoasea01--qd9ou8q.whitecliff-6089bcdd.southeastasia.azurecontainerapps.io/'
+base_url = os.getenv('API_BASE_URL')
+# base_url = 'https://pptst01atmcoasea01--qd9ou8q.whitecliff-6089bcdd.southeastasia.azurecontainerapps.io/'
 
 # User input for pipeline id and branch name
 pipeline_id = st.text_input("Enter the pipeline ID")
