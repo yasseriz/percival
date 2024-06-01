@@ -78,7 +78,7 @@ jobs:
         continue-on-error: true
         working-directory: "${{ env.TF_PATH}}"
 
-      - name: Deploy FastAPI Container app
+      - name: Deploy Container Apps
         uses: azure/cli@v2
         with:
           azcliversion: latest
@@ -86,21 +86,3 @@ jobs:
             az containerapp create --resource-group pptst01sea-atm --name pptst01atmcoasea01 --image "${{ vars.DOCKER_REGISTRY_URL }}/${{ github.event.repository.name }}/fastapi:${{ env.VERSION_TAG }}" --registry-server ${{ vars.DOCKER_REGISTRY_URL }} --target-port 8000 --ingress external --environment pptst01atmcaesea01 --registry-identity ${{ vars.MI_RESOURCE_ID}}
             api_base_url=$(az containerapp show --name pptst01atmcoasea01 --resource-group pptst01sea-atm --query 'properties.configuration.ingress.fqdn' -o tsv)
             az containerapp create --resource-group pptst01sea-atm --name pptst01atmcoasea02 --environment pptst01atmcaesea01 --env-vars API_BASE_URL=$api_base_url --image "${{ vars.DOCKER_REGISTRY_URL }}/${{ github.event.repository.name }}/streamlit:${{ env.VERSION_TAG }}" --registry-server ${{ vars.DOCKER_REGISTRY_URL }} --target-port 8501 --ingress external --registry-identity ${{ vars.MI_RESOURCE_ID}}
-
-      # - name: Deploy FastAPI Container app
-      #   uses: azure/container-apps-deploy-action@v1
-      #   with:
-      #     acrName: "pptst01atmacrsea01"
-      #     imageToDeploy: ${{ vars.DOCKER-REGISTRY-URL }}/${{ github.event.repository.name }}/fastapi:${{ env.VERSION_TAG }}
-      #     containerAppName: "pptst01atmcoasea01"
-      #     resourceGroup: "pptst01sea-atm"
-      #     containerAppEnvironment: "pptst01atmcaesea01"
-
-      # - name: Deploy Streamlit Container app
-      #   uses: azure/container-apps-deploy-action@v1
-      #   with:
-      #     acrName: "pptst01atmacrsea01"
-      #     imageToDeploy: ${{ vars.DOCKER-REGISTRY-URL }}/${{ github.event.repository.name }}/streamlit:${{ env.VERSION_TAG }}
-      #     containerAppName: "pptst01atmcoasea02"
-      #     resourceGroup: "pptst01sea-atm"
-      #     containerAppEnvironment: "pptst01atmcaesea01"
